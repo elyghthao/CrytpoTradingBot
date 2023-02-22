@@ -15,8 +15,6 @@ import krakenex
 
 
 api_url = "https://api.kraken.com"
-
-
 api_key = Path('./kraken_api_key.txt').read_text()
 private_key = Path('./kraken_api_private_key.txt').read_text()
 k = krakenex.API(api_key, private_key)  # use for getting market data
@@ -51,8 +49,8 @@ percentageChange = 1.5  # in percentage form
 percentageToUse = 80  # in percentage form
 flatPriceToUse = 0  # amount of dollars to use, is in dollars, default to 0 to use percentage
 count = 0
-coinTime = 10
-iterationTime = 60
+coinTime = 2 #amount of seconds between each query
+iterationTime = 60 #amount of seconds between each iteration (while loop)
 
 coinList = ["APEUSD", "ADAUSD", "MATICUSD", "ATOMUSD", "TRXUSD", "LDOUSD", "ALGOUSD"]
 # coinList = ["ADAUSD"]
@@ -64,7 +62,7 @@ open_orders_list= open_orders_list['result']['open'].keys()
 currentOrderIdList = []
 for order in open_orders_list:
     currentOrderIdList.append(order)
-
+time.sleep(coinTime)
 
 while (True):
 
@@ -80,6 +78,7 @@ while (True):
                     "txid": order_Id
                 }, api_key, private_key).json()['result']
             currentStatus = order_status[order_Id]['status']
+
             if(currentStatus == 'closed'):
                 closedCoin = order_status[order_Id]['descr']['pair']
                 # print( order_Id + " is : "  + str(currentStatus))
@@ -90,16 +89,17 @@ while (True):
                     f.write(message + "\n")
                     f.close()
         
+        
 
 
         for pair in coinList:
-            time.sleep(coinTime)
+            time.sleep(coinTime)#-------------------------------
             #Current Balance
             balance = kraken_request("/0/private/Balance", {
                 "nonce": str(int(1000 * time.time()))
             }, api_key, private_key).json()
             balance = balance['result'] 
-
+            time.sleep(coinTime)#-------------------------------
         
             # amount able to use based off of percentage value indicated at the top
             amountOfCash = float(balance['ZUSD'])
@@ -111,6 +111,7 @@ while (True):
             decimalPlaces = orderMin['result'][pair]['pair_decimals']
             orderMin = orderMin['result'][pair]['ordermin'] 
             # print(decimalPlaces)
+            time.sleep(coinTime)#-------------------------------
         
 
 
@@ -122,6 +123,7 @@ while (True):
             current_price = float(k.query_public('Ticker', {'pair': pair})['result'][pair]['c'][0])
             # print("currentPrice: " + str(current_price))
             sell_price = round(float(current_price + (past_price - current_price)/3), decimalPlaces) #sell_price percentage: currently is 1/3 the percentage change (mean calculation)
+            time.sleep(coinTime)#-------------------------------
 
             #get price change, percentage, 2 decimal places
             price_change = (current_price - past_price) / past_price * 100
@@ -173,6 +175,7 @@ while (True):
                     "pair": pair,
                 }, api_key, private_key)
                 print(colored(buyOrder.json(), 'green'))
+                time.sleep(coinTime)#-------------------------------
 
                 sellOrder = kraken_request("/0/private/AddOrder", {
                     "nonce": str(int(1000 * time.time())),
@@ -184,6 +187,7 @@ while (True):
                 }, api_key, private_key)
                 print(colored(sellOrder.json(), 'green'))
                 currentOrderIdList.append(sellOrder.json()['result']['txid'][0])
+                time.sleep(coinTime)#-------------------------------
 
             #    message describing buy and sell process, spits out info into receipt.txt
                 message = str(datetime.datetime.now()) + "\t(BOUGHT " + str(useAmount) + " " + pair + " for " + "$" + str(round(current_price,2)) + ")  (SELL AT $" + str(sell_price) + ")" + "  (BALANCE  Before: $" + str(amountOfCash) + " Now: $" + str(amountOfCash - useAmount) + ")"
