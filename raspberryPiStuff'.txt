@@ -1,0 +1,13 @@
+username: pi1
+password: raspberry1
+hostname: 10.0.0.228
+
+connect using putty and winscp
+
+put python file in raspberry with winscp
+
+
+use screen
+
+'screen -ls'
+'screen -r <session ID>'
