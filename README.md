@@ -11,5 +11,5 @@ Manipulated Data:
 * Predicted profit margins
 * Chosen coins
 
-
+<img src="./images/pythonscriptcmd.svg">
  
